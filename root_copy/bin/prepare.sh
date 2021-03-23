@@ -38,17 +38,16 @@ if [ -e "/docker_data/AzureConfig.json" ];then
     while true
     do
         # -------------------
-        if docker pull bdsmaneger/maneger:latest|grep -q 'up to date';then
-            echo "Up to date"
-        else
-            docker stop bdsCore; start_image
+        if ! docker pull bdsmaneger/maneger:latest | grep -q 'up to date';then
+            docker stop bdsCore
+            start_image
         fi
         # -------------------
         if [ "$(docker ps -q -f name=bdsCore)" == "" ];then start_image ;fi
         # -------------------
-        sleep 2h
+        sleep 30m
     done
 else
-    (cd /save_config && node index.js)
+    (cd /save_config && npm i --no-save && node index.js)
     exit 1
 fi

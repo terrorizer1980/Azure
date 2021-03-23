@@ -2,13 +2,6 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "accountPrefix": {
-            "type": "string",
-            "metadata": {
-                "description": "Unique prefix for your Storage Account and VM name. Must be all lower case letters or numbers. No spaces or special characters."
-            },
-            "defaultValue": "bds-maneger"
-        },
         "adminUsername": {
             "type": "string",
             "metadata": {
@@ -16,65 +9,52 @@
             },
             "defaultValue": "bdsmaneger"
         },
-        "vmSize": {
-            "type": "string",
-            "metadata": {
-                "description": "Choose between DSv2 or DSv3 Series"
-            },
-            "defaultValue": "Standard_D8s_v3"
-        },
-        "storageDiskSizeGB": {
-            "type": "string",
-            "metadata": {
-                "description": "Select a Premium Storage disk capacity for your source code, in GB. Default value: 512."
-            },
-            "defaultValue": "50"
-        },
-        "authenticationType": {
-            "type": "string",
-            "defaultValue": "password",
-            "allowedValues": [
-                "sshPublicKey",
-                "password"
-            ],
-            "metadata": {
-                "description": "Type of authentication to use on the Virtual Machine. SSH key is recommended."
-            }
-        },
-        "adminPasswordOrKey": {
+        "adminPassword": {
             "type": "securestring",
             "metadata": {
-                "description": "SSH Key or password for the Virtual Machine. SSH key is recommended."
+                "description": "password for the Virtual Machine."
             }
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_B1s",
+            "metadata": {
+                "description": "Choose a machine in the size you need"
+            }
+        },
+        "IpType": {
+            "type": "string",
+            "defaultValue": "Dynamic",
+            "allowedValues": [
+                "Dynamic",
+                "Static"
+            ],
+            "metadata": {
+                "description": "Static ips, are ips that will be reserved if you turn off the vm, the dynamic ips are those after you turn off the machine, next time it will give you a new ip. Plus all of them will receive a fqdn from microsoft in case they want to add as CNAME in the DNS records."
+            }
+        },
+        "BdsManegerCoreDiskSize": {
+            "type": "string",
+            "metadata": {
+                "description": "Select a Premium Storage disk capacity for your source code, in GB. Default value: 50."
+            },
+            "defaultValue": "50"
         }
     },
     "variables": {
-        "OSDiskName": "BdsCoreSystem",
+        "vmnamemain": "bds-maneger",
         "cloud_init": "#cloud-config\n\nruncmd:\n- r=60 && ",
-        "nicName": "[concat(replace(replace(parameters('accountPrefix'),'.',''),'_','-'), '-nic')]",
+        "nicName": "[concat(replace(replace(variables('vmNamemain'),'.',''),'_','-'), '-nic')]",
         "addressPrefix": "10.0.0.0/16",
         "subnetName": "Subnet",
         "subnetPrefix": "10.0.0.0/24",
         "storageAccountType": "Premium_LRS",
-        "storageAccountName": "[concat(uniqueString(replace(replace(replace(parameters('accountPrefix'),'.',''),'_',''),'-','')), 'data')]",
-        "publicIPAddressName": "[concat(replace(replace(parameters('accountPrefix'),'.',''),'_','-'), '-pub-ip')]",
-        "publicIPAddressType": "Dynamic",
-        "dnsNameForPublicIP": "[concat(parameters('accountPrefix'), '-bds')]",
-        "vmName": "[concat(replace(replace(parameters('accountPrefix'),'.',''),'_','-'), '-bds-vm')]",
-        "virtualNetworkName": "[concat(replace(replace(parameters('accountPrefix'),'.',''),'_','-'), '-vnet')]",
-        "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
-        "dataDiskName": "bds-data",
-        "linuxConfiguration": {
-            "disablePasswordAuthentication": true,
-            "ssh": {
-                "publicKeys": [
-                    {
-                        "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
-                        "keyData": "[parameters('adminPasswordOrKey')]"
-                    }
-                ]
-            }
-        }
+        "storageAccountName": "[concat(uniqueString(replace(replace(replace(variables('vmNamemain'),'.',''),'_',''),'-','')), 'data')]",
+        "publicIPAddressName": "[concat(replace(replace(variables('vmNamemain'),'.',''),'_','-'), '-pub-ip')]",
+        "dnsNameForPublicIP": "[concat(variables('vmNamemain'), '-bds')]",
+        "vmName": "[concat(replace(replace(variables('vmNamemain'),'.',''),'_','-'), '-bds-vm')]",
+        "virtualNetworkName": "[concat(replace(replace(variables('vmNamemain'),'.',''),'_','-'), '-vnet')]",
+        "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]"
     },
     "resources": [
         {
@@ -93,9 +73,9 @@
             "name": "[variables('publicIPAddressName')]",
             "location": "[resourceGroup().location]",
             "properties": {
-                "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
+                "publicIPAllocationMethod": "[parameters('IpType')]",
                 "dnsSettings": {
-                "domainNameLabel": "[variables('dnsNameForPublicIP')]"
+                    "domainNameLabel": "[variables('dnsNameForPublicIP')]"
                 }
             }
         },
@@ -162,9 +142,8 @@
                 "osProfile": {
                     "computerName": "[variables('vmName')]",
                     "adminUsername": "[parameters('adminUsername')]",
-                    "adminPassword": "[parameters('adminPasswordOrKey')]",
-                    "customData": "[base64(concat(variables('cloud_init'), 'curl https://raw.githubusercontent.com/The-Bds-Maneger/Azure_VMs/main/installinVM.sh|sudo bash -'))]",
-                    "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"
+                    "adminPassword": "[parameters('adminPassword')]",
+                    "customData": "[base64(concat(variables('cloud_init'), 'curl https://raw.githubusercontent.com/The-Bds-Maneger/Azure_VMs/main/installinVM.sh|sudo bash -'))]"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -174,16 +153,17 @@
                         "version": "latest"
                     },
                     "osDisk": {
-                        "name": "[concat(variables('OSDiskName'),'_OSDisk')]",
+                        "name": "OSDisk",
                         "caching": "ReadWrite",
                         "createOption": "FromImage"
                     },
                     "dataDisks": [
                         {
-                        "name": "[concat(variables('dataDiskName'),'_DataDisk1')]",
-                        "diskSizeGB": "[parameters('storageDiskSizeGB')]",
-                        "createOption": "Empty",
-                        "lun": 0
+                            "name": "BdsCoreDisk",
+                            "diskSizeGB": "[parameters('BdsManegerCoreDiskSize')]",
+                            "createOption": "Empty",
+                            "lun": 0,
+                            "caching": "ReadWrite"
                         }
                     ]
                 },
@@ -198,9 +178,9 @@
         }
     ],
     "outputs": {
-        "fqdn": {
+        "config_core": {
             "type": "string",
-            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))).dnsSettings.fqdn]"
+            "value": "[concat('http://', reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))).dnsSettings.fqdn, ':7774')]"
         }
     }
 }
