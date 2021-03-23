@@ -1,0 +1,206 @@
+    {
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "accountPrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "Unique prefix for your Storage Account and VM name. Must be all lower case letters or numbers. No spaces or special characters."
+            },
+            "defaultValue": "bds-maneger"
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "Username for the VM. This value is ignored."
+            },
+            "defaultValue": "bdsmaneger"
+        },
+        "vmSize": {
+            "type": "string",
+            "metadata": {
+                "description": "Choose between DSv2 or DSv3 Series"
+            },
+            "defaultValue": "Standard_D8s_v3"
+        },
+        "storageDiskSizeGB": {
+            "type": "string",
+            "metadata": {
+                "description": "Select a Premium Storage disk capacity for your source code, in GB. Default value: 512."
+            },
+            "defaultValue": "50"
+        },
+        "authenticationType": {
+            "type": "string",
+            "defaultValue": "password",
+            "allowedValues": [
+                "sshPublicKey",
+                "password"
+            ],
+            "metadata": {
+                "description": "Type of authentication to use on the Virtual Machine. SSH key is recommended."
+            }
+        },
+        "adminPasswordOrKey": {
+            "type": "securestring",
+            "metadata": {
+                "description": "SSH Key or password for the Virtual Machine. SSH key is recommended."
+            }
+        }
+    },
+    "variables": {
+        "OSDiskName": "BdsCoreSystem",
+        "cloud_init": "#cloud-config\n\nruncmd:\n- r=60 && ",
+        "nicName": "[concat(replace(replace(parameters('accountPrefix'),'.',''),'_','-'), '-nic')]",
+        "addressPrefix": "10.0.0.0/16",
+        "subnetName": "Subnet",
+        "subnetPrefix": "10.0.0.0/24",
+        "storageAccountType": "Premium_LRS",
+        "storageAccountName": "[concat(uniqueString(replace(replace(replace(parameters('accountPrefix'),'.',''),'_',''),'-','')), 'data')]",
+        "publicIPAddressName": "[concat(replace(replace(parameters('accountPrefix'),'.',''),'_','-'), '-pub-ip')]",
+        "publicIPAddressType": "Dynamic",
+        "dnsNameForPublicIP": "[concat(parameters('accountPrefix'), '-bds')]",
+        "vmName": "[concat(replace(replace(parameters('accountPrefix'),'.',''),'_','-'), '-bds-vm')]",
+        "virtualNetworkName": "[concat(replace(replace(parameters('accountPrefix'),'.',''),'_','-'), '-vnet')]",
+        "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
+        "dataDiskName": "bds-data",
+        "linuxConfiguration": {
+            "disablePasswordAuthentication": true,
+            "ssh": {
+                "publicKeys": [
+                    {
+                        "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
+                        "keyData": "[parameters('adminPasswordOrKey')]"
+                    }
+                ]
+            }
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('storageAccountName')]",
+            "apiVersion": "2019-06-01",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "[variables('storageAccountType')]"
+            },
+            "kind": "StorageV2"
+        },
+        {
+            "apiVersion": "2020-05-01",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('publicIPAddressName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
+                "dnsSettings": {
+                "domainNameLabel": "[variables('dnsNameForPublicIP')]"
+                }
+            }
+        },
+        {
+            "apiVersion": "2020-05-01",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('virtualNetworkName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('addressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('subnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnetPrefix')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2020-05-01",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('nicName')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
+                            },
+                            "subnet": {
+                                "id": "[variables('subnetRef')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2020-12-01",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vmName')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+                "[resourceId('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vmName')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPasswordOrKey')]",
+                    "customData": "[base64(concat(variables('cloud_init'), 'curl https://raw.githubusercontent.com/The-Bds-Maneger/Azure_VMs/main/installinVM.sh|sudo bash -'))]",
+                    "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "UbuntuServer",
+                        "sku": "18.04-LTS",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "[concat(variables('OSDiskName'),'_OSDisk')]",
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    },
+                    "dataDisks": [
+                        {
+                        "name": "[concat(variables('dataDiskName'),'_DataDisk1')]",
+                        "diskSizeGB": "[parameters('storageDiskSizeGB')]",
+                        "createOption": "Empty",
+                        "lun": 0
+                        }
+                    ]
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "fqdn": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))).dnsSettings.fqdn]"
+        }
+    }
+}

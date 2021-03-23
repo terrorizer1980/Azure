@@ -1,0 +1,1 @@
+0 23 * * 0 root cd /opt/bds_core_vm && git pull && cp -rfv root_copy/* /
