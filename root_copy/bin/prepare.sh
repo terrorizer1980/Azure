@@ -43,9 +43,8 @@ if [ -e "/docker_data/AzureConfig.json" ];then
             start_image
         fi
         # -------------------
-        if [ "$(docker ps -q -f name=bdsCore)" == "" ];then start_image ;fi
+        if [ "$(docker ps -q -f name=bdsCore)" == "" ];then start_image; else sleep 30m;fi
         # -------------------
-        sleep 30m
     done
 else
     (cd /save_config && npm i --no-save && node index.js)
