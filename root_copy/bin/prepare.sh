@@ -22,6 +22,7 @@ start_image(){
     -p 19132:19132/udp \
     -p 19133:19133/udp \
     -p 1932:1932/tcp \
+    -p 6658:6658/tcp \
     -e TELEGRAM_TOKEN="$(cat /docker_data/AzureConfig.json|jq -r '.telegram')" \
     -e WORLD_NAME="$(cat /docker_data/AzureConfig.json|jq -r '.world')" \
     -e DESCRIPTION="$(cat /docker_data/AzureConfig.json|jq -r '.description')" \
