@@ -1,11 +1,10 @@
 #!/bin/bash
 #
 #
-
 if ! command -v docker &> /dev/null ;then curl https://get.docker.com|bash -;fi
 if ! command -v node &> /dev/null   ;then curl -fsSL https://deb.nodesource.com/setup_current.x | bash -;apt install -y nodejs;fi
 if ! command -v jq &> /dev/null     ;then apt install -y jq;fi
-
+if ! [ -e "/etc/bds_docker_version" ];then echo "nightly" > /etc/bds_docker_version ;fi
 if ! lsblk |grep -q "docker_data";then
     set -ex
     disk=`ls -tr /dev/sd*|grep -v -e [0-9]|grep -v "$(ls -tr /dev/sd*[1-9]|sed -e "s|[0-9]||g"|uniq)"| head -1`
@@ -17,6 +16,7 @@ if ! lsblk |grep -q "docker_data";then
     cat /etc/fstab|tail -1
     mount -a
 fi
+docker_image="bdsmaneger/maneger:$(cat /etc/bds_docker_version)"
 start_image(){
     docker run --rm -d --name bdsCore -v /docker_data/:/home/bds \
     -p 19132:19132/udp \
@@ -32,19 +32,19 @@ start_image(){
     -e SERVER="$(cat /docker_data/AzureConfig.json|jq -r '.platform')" \
     -e BDS_REINSTALL="true" \
     -e BDS_VERSION="$(cat /docker_data/AzureConfig.json|jq -r '.version')" \
-    bdsmaneger/maneger:latest
+    ${docker_image}
 }
 if [ -e "/docker_data/AzureConfig.json" ];then
     set -e
     while true
     do
         # -------------------
-        if ! docker pull bdsmaneger/maneger:latest | grep -q 'up to date';then
+        if ! docker pull ${docker_image} | grep -q 'up to date';then
             docker stop bdsCore
             start_image
         fi
         # -------------------
-        if [ "$(docker ps -q -f name=bdsCore)" == "" ];then start_image; else sleep 30m;fi
+        if [ "$(docker ps -q -f name=bdsCore)" == "" ];then start_image; else sleep 2m;fi
         # -------------------
     done
 else

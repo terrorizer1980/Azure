@@ -15,6 +15,21 @@
                 "description": "password for the Virtual Machine."
             }
         },
+        "BdsManegerCoreDiskSize": {
+            "type": "string",
+            "metadata": {
+                "description": "Select a Premium Storage disk capacity for your source code, in GB. Default value: 50."
+            },
+            "defaultValue": "50"
+        },
+        "bds_core_vesion": {
+            "type": "string",
+            "defaultValue": "nightly",
+            "allowedValues": [
+                "nightly",
+                "latest"
+            ]
+        },
         "vmSize": {
             "type": "string",
             "defaultValue": "Standard_B1s",
@@ -32,13 +47,6 @@
             "metadata": {
                 "description": "Static ips, are ips that will be reserved if you turn off the vm, the dynamic ips are those after you turn off the machine, next time it will give you a new ip. Plus all of them will receive a fqdn from microsoft in case they want to add as CNAME in the DNS records."
             }
-        },
-        "BdsManegerCoreDiskSize": {
-            "type": "string",
-            "metadata": {
-                "description": "Select a Premium Storage disk capacity for your source code, in GB. Default value: 50."
-            },
-            "defaultValue": "50"
         }
     },
     "variables": {
@@ -143,7 +151,7 @@
                     "computerName": "[variables('vmName')]",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPassword')]",
-                    "customData": "[base64(concat(variables('cloud_init'), 'curl https://raw.githubusercontent.com/The-Bds-Maneger/Azure_VMs/main/installinVM.sh|sudo bash -'))]"
+                    "customData": "[base64(concat(variables('cloud_init'), 'curl https://raw.githubusercontent.com/The-Bds-Maneger/Azure_VMs/main/installinVM.sh|sudo docker_version=\"', parameters('bds_core_vesion'), '\" bash -'))]"
                 },
                 "storageProfile": {
                     "imageReference": {
