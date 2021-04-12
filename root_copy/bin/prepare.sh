@@ -42,6 +42,7 @@ if [ -e "/docker_data/AzureConfig.json" ];then
         # -------------------
         if ! docker pull ${docker_image} | grep -q 'up to date';then
             docker stop bdsCore
+            docker rmi $(docker image ls |grep bdsmaneger|awk '{print $3}')
             start_image
         fi
         # -------------------
