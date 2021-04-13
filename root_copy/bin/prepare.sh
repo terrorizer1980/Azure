@@ -4,7 +4,9 @@
 if ! command -v docker &> /dev/null ;then curl https://get.docker.com|bash -;fi
 if ! command -v node &> /dev/null   ;then curl -fsSL https://deb.nodesource.com/setup_current.x | bash -;apt install -y nodejs;fi
 if ! command -v jq &> /dev/null     ;then apt install -y jq;fi
+
 if ! [ -e "/etc/bds_docker_version" ];then echo "nightly" > /etc/bds_docker_version ;fi
+
 if ! lsblk |grep -q "docker_data";then
     set -ex
     disk=`ls -tr /dev/sd*|grep -v -e [0-9]|grep -v "$(ls -tr /dev/sd*[1-9]|sed -e "s|[0-9]||g"|uniq)"| head -1`
@@ -19,11 +21,9 @@ fi
 docker_image="bdsmaneger/maneger:$(cat /etc/bds_docker_version)"
 start_image(){
     docker run --rm -d --name bdsCore -v /docker_data/:/home/bds \
-    -p 19132:19132/udp \
-    -p 19133:19133/udp \
-    -p 1932:1932/tcp \
-    -p 80:80/tcp \
-    -p 6658:6658/tcp \
+    # Ports
+    -p 19132:19132/udp -p 19133:19133/udp -p 1932:1932/tcp -p 80:80/tcp -p 6658:6658/tcp \
+    # Envs
     -e TELEGRAM_TOKEN="$(cat /docker_data/AzureConfig.json|jq -r '.telegram')" \
     -e WORLD_NAME="$(cat /docker_data/AzureConfig.json|jq -r '.world')" \
     -e DESCRIPTION="$(cat /docker_data/AzureConfig.json|jq -r '.description')" \
@@ -42,9 +42,9 @@ if [ -e "/docker_data/AzureConfig.json" ];then
         # -------------------
         if ! docker pull ${docker_image} | grep -q 'up to date';then
             docker stop bdsCore
-            docker rmi $(docker image ls |grep bdsmaneger|awk '{print $3}')
             start_image
         fi
+        if (($(df -h / | awk '{print $5}'|tail -1|sed 's|%||g') > 80)) ;then docker rmi $(docker image ls --all |grep bdsmaneger|awk '{print $3}');fi
         # -------------------
         if [ "$(docker ps -q -f name=bdsCore)" == "" ];then start_image; else sleep 2m;fi
         # -------------------

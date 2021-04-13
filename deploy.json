@@ -18,17 +18,67 @@
         "BdsManegerCoreDiskSize": {
             "type": "string",
             "metadata": {
-                "description": "Select a Premium Storage disk capacity for your source code, in GB. Default value: 50."
+                "description": "Select the total storage for the Bds Manager Core (In Gb)"
             },
             "defaultValue": "50"
         },
+        "WorldName": {
+            "type": "string",
+            "defaultValue": "Bds Maneger World"
+        },
+        "WorldDescription": {
+            "type": "string",
+            "defaultValue": "Welcome to Bds Maneger"
+        },
+        "TotalPlayers": {
+            "type": "string",
+            "defaultValue": "23"
+        },
+        "TelegramBOT": {
+            "type": "string",
+            "defaultValue": "null",
+            "metadata": {
+                "description": "To deactivate Telegram, leave it with \"null\" or blank"
+            }
+        },
+        "MinecraftGamemode": {
+            "defaultValue": "survival",
+            "allowedValues": [
+                "creative",
+                "survival",
+                "hardcore"
+            ],
+            "type": "string"
+        },
+        "MinecraftDifficulty": {
+            "type": "string",
+            "defaultValue": "normal",
+            "allowedValues": [
+                "peeceful",
+                "easy",
+                "normal",
+                "hard"
+            ]
+        },
+        "BdsManegerPlatform": {
+            "type": "string",
+            "defaultValue": "bedrock",
+            "allowedValues": [
+                "bedrock",
+                "java",
+                "pocketmine"
+            ]
+        },
         "bds_core_vesion": {
             "type": "string",
-            "defaultValue": "nightly",
+            "defaultValue": "latest",
             "allowedValues": [
                 "nightly",
                 "latest"
-            ]
+            ],
+            "metadata": {
+                "description": "Here is something important, Bds Maneger has two images, <br>Nightly is the latest version of Bds Maneger Core and may have features sooner, it is also more subtle to bugs <br>,As long as we have lattes it is an image that undergoes tests before being published, it will always accompany the NPM package, and it is less subtle to errors"
+            }
         },
         "vmSize": {
             "type": "string",
@@ -57,6 +107,7 @@
         "subnetName": "Subnet",
         "subnetPrefix": "10.0.0.0/24",
         "storageAccountType": "Premium_LRS",
+        "InstallVariables": "[concat('docker_version=\"', parameters('bds_core_vesion'), '\" worldname=\"', parameters('WorldName'), '\" worlddescripition=\"', parameters('WorldDescription'), '\" totalplayers=\"', int(parameters('TotalPlayers')), '\" TelegramBOT=\"', parameters('TelegramBOT'), '\" gamemode=\"', parameters('MinecraftGamemode'), '\" difficulty=\"', parameters('MinecraftDifficulty'), '\" bdsplatfrom=\"', parameters('BdsManegerPlatform'), '\"')]",
         "storageAccountName": "[concat(uniqueString(replace(replace(replace(variables('vmNamemain'),'.',''),'_',''),'-','')), 'data')]",
         "publicIPAddressName": "[concat(replace(replace(variables('vmNamemain'),'.',''),'_','-'), '-pub-ip')]",
         "dnsNameForPublicIP": "[concat(variables('vmNamemain'), '-bds')]",
@@ -151,7 +202,7 @@
                     "computerName": "[variables('vmName')]",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPassword')]",
-                    "customData": "[base64(concat(variables('cloud_init'), 'curl https://raw.githubusercontent.com/The-Bds-Maneger/Azure_VMs/main/installinVM.sh|sudo docker_version=\"', parameters('bds_core_vesion'), '\" bash -'))]"
+                    "customData": "[base64(concat(variables('cloud_init'), 'curl https://raw.githubusercontent.com/The-Bds-Maneger/Azure_VMs/main/installinVM.sh|sudo ', variables('InstallVariables'), ' bash -'))]"
                 },
                 "storageProfile": {
                     "imageReference": {
