@@ -108,7 +108,7 @@
         "subnetPrefix": "10.0.0.0/24",
         "storageAccountType": "Premium_LRS",
         "InstallVariables": "[concat('docker_version=\"', parameters('bds_core_vesion'), '\" worldname=\"', parameters('WorldName'), '\" worlddescripition=\"', parameters('WorldDescription'), '\" totalplayers=\"', int(parameters('TotalPlayers')), '\" TelegramBOT=\"', parameters('TelegramBOT'), '\" gamemode=\"', parameters('MinecraftGamemode'), '\" difficulty=\"', parameters('MinecraftDifficulty'), '\" bdsplatfrom=\"', parameters('BdsManegerPlatform'), '\"')]",
-        "storageAccountName": "[concat(uniqueString(replace(replace(replace(variables('vmNamemain'),'.',''),'_',''),'-','')), 'data')]",
+        "storageAccountName": "[concat(uniqueString(replace(replace(replace(variables('vmNamemain'),'.',''),'_',''),'-',''), resourceGroup().id), 'data')]",
         "publicIPAddressName": "[concat(replace(replace(variables('vmNamemain'),'.',''),'_','-'), '-pub-ip')]",
         "dnsNameForPublicIP": "[concat(variables('vmNamemain'), '-bds')]",
         "vmName": "[concat(replace(replace(variables('vmNamemain'),'.',''),'_','-'), '-bds-vm')]",
