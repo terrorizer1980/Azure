@@ -110,7 +110,7 @@
         "InstallVariables": "[concat('docker_version=\"', parameters('bds_core_vesion'), '\" worldname=\"', parameters('WorldName'), '\" worlddescripition=\"', parameters('WorldDescription'), '\" totalplayers=\"', int(parameters('TotalPlayers')), '\" TelegramBOT=\"', parameters('TelegramBOT'), '\" gamemode=\"', parameters('MinecraftGamemode'), '\" difficulty=\"', parameters('MinecraftDifficulty'), '\" bdsplatfrom=\"', parameters('BdsManegerPlatform'), '\"')]",
         "storageAccountName": "[concat(uniqueString(replace(replace(replace(variables('vmNamemain'),'.',''),'_',''),'-',''), resourceGroup().id), 'data')]",
         "publicIPAddressName": "[concat(replace(replace(variables('vmNamemain'),'.',''),'_','-'), '-pub-ip')]",
-        "dnsNameForPublicIP": "[concat(variables('vmNamemain'), '-bds')]",
+        "dnsNameForPublicIP": "[concat(uniqueString(variables('vmNamemain'), resourceGroup().id), '-bds')]",
         "vmName": "[concat(replace(replace(variables('vmNamemain'),'.',''),'_','-'), '-bds-vm')]",
         "virtualNetworkName": "[concat(replace(replace(variables('vmNamemain'),'.',''),'_','-'), '-vnet')]",
         "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]"

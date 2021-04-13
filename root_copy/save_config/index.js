@@ -23,5 +23,5 @@ if (existsSync("/etc/bdscoreConfig")) {
     configOld.gamemode = Portal.gamemode
     configOld.difficulty = Portal.difficulty
     configOld.platform = Portal.bdsplatfrom
-    writeFileSync(docker_config, JSON.stringify(config_json, null, 4));
+    writeFileSync(docker_config, JSON.stringify(configOld, null, 4));
 }
