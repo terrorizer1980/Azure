@@ -4,8 +4,7 @@ const { resolve } = require("path");
 const docker_config = resolve("/docker_data", "AzureConfig.json")
 
 var configOld = {
-    "telegram": "null",
-    "world": "Vinicim13",
+    "world": "Is Core",
     "description": "A simple description to not disturb the reading",
     "gamemode": "survival",
     "difficulty": "normal",
@@ -19,7 +18,6 @@ if (existsSync("/etc/bdscoreConfig")) {
     configOld.description = Portal.worlddescripition
     configOld.world = Portal.worldname
     configOld.players = Portal.totalplayers
-    configOld.telegram = Portal.TelegramBOT
     configOld.gamemode = Portal.gamemode
     configOld.difficulty = Portal.difficulty
     configOld.platform = Portal.bdsplatfrom

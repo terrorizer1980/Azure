@@ -18,7 +18,7 @@ if ! lsblk |grep -q "docker_data";then
     cat /etc/fstab|tail -1
     mount -a
 fi
-docker_image="bdsmaneger/maneger:$(cat /etc/bds_docker_version)"
+docker_image="bdsmaneger/core:$(cat /etc/bds_docker_version)"
 start_image(){
     docker run --rm -d --name bdsCore -v /docker_data/:/home/bds \
     -p 19132:19132/udp -p 19133:19133/udp -p 1932:1932/tcp -p 80:80/tcp -p 6658:6658/tcp \

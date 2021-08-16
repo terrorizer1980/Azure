@@ -1,6 +1,6 @@
     {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
+    "contentVersion": "1.0.0.1",
     "parameters": {
         "adminUsername": {
             "type": "string",
@@ -28,18 +28,11 @@
         },
         "WorldDescription": {
             "type": "string",
-            "defaultValue": "Welcome to Bds Maneger"
+            "defaultValue": "Welcome to Bds Maneger Core"
         },
         "TotalPlayers": {
             "type": "string",
             "defaultValue": "23"
-        },
-        "TelegramBOT": {
-            "type": "string",
-            "defaultValue": "null",
-            "metadata": {
-                "description": "To deactivate Telegram, leave it with \"null\" or blank"
-            }
         },
         "MinecraftGamemode": {
             "defaultValue": "survival",
@@ -66,14 +59,15 @@
             "allowedValues": [
                 "bedrock",
                 "java",
-                "pocketmine"
+                "pocketmine",
+                "spigot"
             ]
         },
         "bds_core_vesion": {
             "type": "string",
             "defaultValue": "latest",
             "allowedValues": [
-                "nightly",
+                "dev",
                 "latest"
             ],
             "metadata": {
@@ -107,7 +101,7 @@
         "subnetName": "Subnet",
         "subnetPrefix": "10.0.0.0/24",
         "storageAccountType": "Premium_LRS",
-        "InstallVariables": "[concat('docker_version=\"', parameters('bds_core_vesion'), '\" worldname=\"', parameters('WorldName'), '\" worlddescripition=\"', parameters('WorldDescription'), '\" totalplayers=\"', int(parameters('TotalPlayers')), '\" TelegramBOT=\"', parameters('TelegramBOT'), '\" gamemode=\"', parameters('MinecraftGamemode'), '\" difficulty=\"', parameters('MinecraftDifficulty'), '\" bdsplatfrom=\"', parameters('BdsManegerPlatform'), '\"')]",
+        "InstallVariables": "[concat('docker_version=\"', parameters('bds_core_vesion'), '\" worldname=\"', parameters('WorldName'), '\" worlddescripition=\"', parameters('WorldDescription'), '\" totalplayers=\"', int(parameters('TotalPlayers')), '\" gamemode=\"', parameters('MinecraftGamemode'), '\" difficulty=\"', parameters('MinecraftDifficulty'), '\" bdsplatfrom=\"', parameters('BdsManegerPlatform'), '\"')]",
         "storageAccountName": "[concat(uniqueString(replace(replace(replace(variables('vmNamemain'),'.',''),'_',''),'-',''), resourceGroup().id), 'data')]",
         "publicIPAddressName": "[concat(replace(replace(variables('vmNamemain'),'.',''),'_','-'), '-pub-ip')]",
         "dnsNameForPublicIP": "[concat(uniqueString(variables('vmNamemain'), resourceGroup().id), '-bds')]",
@@ -175,7 +169,7 @@
                         "properties": {
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]"
                             },
                             "subnet": {
                                 "id": "[variables('subnetRef')]"
@@ -202,7 +196,7 @@
                     "computerName": "[variables('vmName')]",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPassword')]",
-                    "customData": "[base64(concat(variables('cloud_init'), 'curl https://raw.githubusercontent.com/The-Bds-Maneger/Azure_VMs/main/installinVM.sh|sudo ', variables('InstallVariables'), ' bash -'))]"
+                    "customData": "[base64(concat(variables('cloud_init'), 'curl https://raw.githubusercontent.com/The-Bds-Maneger/Azure_VMs/main/installinVM.sh | sudo ', variables('InstallVariables'), ' bash -'))]"
                 },
                 "storageProfile": {
                     "imageReference": {
