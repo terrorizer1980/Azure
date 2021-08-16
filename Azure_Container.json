@@ -47,7 +47,7 @@
             "defaultValue": "bedrock",
             "allowedValues": ["bedrock", "java", "pocketmine", "spigot"],
             "metadata": {
-                "description": "Bedrock: Phones, Xbox, Nintendo switch, etc. Java: Desktops"
+                "description": "Currently Bds Maneger Core supports several server platforms. such as: Bedrock, Java, Pocketmine-MP and Spigot."
             }
         },
         "numberCpuCores": {
@@ -62,8 +62,8 @@
         }
     },
     "variables": {
-        "bdsstorage": "bdssave",
-        "StorageName": "[concat('bdssave', uniqueString(resourceGroup().id))]",
+        "bdsstorage": "storage_data",
+        "StorageName": "[concat('bdsstorage', uniqueString(resourceGroup().id))]",
         "DnsName": "[concat('bdsdns-', uniqueString(resourceGroup().id))]",
         "bds_ports": [
             {
@@ -106,7 +106,7 @@
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('StorageName'))]"
             ]
         },
-        // Docker Bds Manegerg Image
+        // Docker Bds Maneger Image
         {
             "location": "[resourceGroup().location]",
             "name": "[parameters('containerName')]",
@@ -120,7 +120,7 @@
                     {
                         "name": "[parameters('containerName')]",
                         "properties": {
-                            "image": "bdsmaneger/core:latest",
+                            "image": "bdsmaneger/core:main",
                             "resources": {
                                 "requests": {
                                     "cpu": "[int(parameters('numberCpuCores'))]",
@@ -156,14 +156,14 @@
                             ],
                             "volumeMounts": [
                                 {
-                                "name": "save",
-                                "mountPath": "/home/bds"
+                                    "name": "save",
+                                    "mountPath": "/home/thebds"
                                 }
                             ]
                         }
                     }
                 ],
-                "restartPolicy": "OnFailure",
+                "restartPolicy": "alway",
                 "osType": "Linux",
                 "ipAddress": {
                     "type": "Public",
