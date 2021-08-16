@@ -157,7 +157,7 @@
                             "volumeMounts": [
                                 {
                                     "name": "save",
-                                    "mountPath": "/home/thebds"
+                                    "mountPath": "/root/bds_core"
                                 }
                             ]
                         }
