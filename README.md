@@ -1,13 +1,15 @@
 # Azure deploys
 
+**Note: We do not disclose prices as they are varied and we do not want to update the platform price every 3 days.**
+
 ## Deploy Bds Maneger core in Azure VM
 
-After the completion of the implementation take the address in the outputs, and wait a few minutes to finish some implementation scripts to finish configuring the Bds Maneger Core
+a more flexible way to run the docker image if you don't want to use Azure's Docker Container.
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FThe-Bds-Maneger%2FAzure_VMs%2Fmain%2Fdeploy.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FThe-Bds-Maneger%2FAzure_VMs%2Fmain%2FAzure_VM.json)
 
 ## Deploy Bds Maneger Core in Docker Container
 
-Install Bds Core in Azure Container
+Deploy Bds Maneger Core inside Azure Docker Container and get more stability in-game.
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FThe-Bds-Maneger%2FAzure_VMs%2Fmain%2Fdeploy.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FThe-Bds-Maneger%2FAzure_VMs%2Fmain%2FAzure_Container.json)
