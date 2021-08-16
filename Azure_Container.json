@@ -62,7 +62,7 @@
         }
     },
     "variables": {
-        "bdsstorage": "storageData",
+        "bdsstorage": "storage-data",
         "StorageName": "[concat('bdsstorage', uniqueString(resourceGroup().id))]",
         "DnsName": "[concat('bdsdns-', uniqueString(resourceGroup().id))]",
         "bds_ports": [
