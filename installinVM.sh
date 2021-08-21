@@ -37,7 +37,7 @@ apt install -y nodejs
 
 # Create JSON Config file
 echo '{"world": "'${worldname}'","description": "'${worlddescripition}'", "gamemode": "'${gamemode}'", "difficulty": "'${difficulty}'", "players": '${totalplayers}', "platform": "'${bdsplatfrom}'", "dockertag": "'${docker_version}'"''}' | tee "/etc/VMAzureConfig.txt"
-cat "/etc/VMAzureConfig.txt" | jq | tee /etc/VMAzureConfig.json
+cat "/etc/VMAzureConfig.txt" | jq '.' | tee /etc/VMAzureConfig.json
 
 # Restart systemctl
 systemctl enable bdscore
