@@ -46,7 +46,7 @@ apt install -y nodejs
     echo '"platform": "'${bdsplatfrom}'",'
     echo '"dockertag": "'${docker_version}'"'
     echo '}'
-) | jq -r > /etc/VMAzureConfig.json
+) | tee /etc/VMAzureConfig.txt | jq | tee /etc/VMAzureConfig.json
 
 # Restart systemctl
 systemctl enable bdscore
