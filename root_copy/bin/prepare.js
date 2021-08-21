@@ -28,17 +28,18 @@ function CreateDiskPartion(){
                 child_process.exec(`mkfs.ext4 ${disk}1`, (err, stdout, stderr) => {
                     if (err) return reject(err);
                     const disk_uuid = child_process.execSync(`blkid ${disk}1`).toString().replace(/^.*:\sUUID="|"\sTYPE=".*PARTUUID.*"|\n/g, "");
-                    const fstab = fs.readFileSync("/etc/fstab", "utf8").split(/\n|\t/gi).map(a => a.trim()).filter(a => /^#/gi.test(a) || a.length > 0).map(mount_point => {
-                        const Split = mount_point.split(/\s+/gi);
+                    const fstab = fs.readFileSync("/etc/fstab", "utf8").split(/\n/gi).map(a => a.trim()).filter(a => !/^#/gi.test(a)).filter(a => a).map(mount_point => {
+                        const Split = mount_point.split(/\s+|\t/gi);
                         return {
                             device: Split[0],
                             mount_point: Split[1],
                             fs_type: Split[2],
                             options: Split[3],
-                            dump: parseInt(Split[4]),
-                            pass: parseInt(Split[5]),
+                            dump: parseInt(Split[4]) || 0,
+                            pass: parseInt(Split[5]) || 0,
                         }
-                    });
+                    })
+                    fs.mkdirSync("/docker_data");
                     const disk_mount = `UUID=${disk_uuid} /docker_data/ ext4 defaults 0 ${fstab[fstab.length - 1].pass + 1}`;
                     fs.appendFileSync("/etc/fstab", `\n${disk_mount}\n`);
                     child_process.execSync("mount -a")
