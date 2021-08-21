@@ -1,1 +1,2 @@
-root_copy/save_config/node_modules/
+node_modules/
+installinVM.sh.base64

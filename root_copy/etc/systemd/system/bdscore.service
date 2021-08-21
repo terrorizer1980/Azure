@@ -8,7 +8,7 @@ Type=simple
 Restart=always
 RestartSec=1
 User=root
-ExecStart=/bin/prepare.sh
+ExecStart=/bin/prepare.js
 
 [Install]
 WantedBy=multi-user.target

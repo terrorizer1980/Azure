@@ -50,6 +50,32 @@
                 "description": "Currently Bds Maneger Core supports several server platforms. such as: Bedrock, Java, Pocketmine-MP and Spigot."
             }
         },
+        "DockerBranch": {
+            "type": "string",
+            "defaultValue": "latest",
+            "allowedValues": [
+                "latest",
+                "main"
+            ],
+            "metadata": {
+                "description": "The branch of Docker image to use."
+            }
+        },
+        "ServerProtocol": {
+            "type": "string",
+            "defaultValue": "TCP",
+            "allowedValues": [
+                "TCP",
+                "UDP"
+            ]
+        },
+        "StorageLimitSizeInGB": {
+            "type": "int",
+            "defaultValue": 10,
+            "metadata": {
+                "description": "The storage limit size in GB."
+            }
+        },
         "numberCpuCores": {
             "type": "string",
             "defaultValue": "2",
@@ -64,21 +90,7 @@
     "variables": {
         "bdsstorage": "storage-data",
         "StorageName": "[concat('bdsstorage', uniqueString(resourceGroup().id))]",
-        "DnsName": "[concat('bdsdns-', uniqueString(resourceGroup().id))]",
-        "bds_ports": [
-            {
-                "port": "1932",
-                "protocol": "TCP"
-            },
-            {
-                "port": "19132",
-                "protocol": "UDP"
-            },
-            {
-                "port": "19133",
-                "protocol": "UDP"
-            }
-        ]
+        "DnsName": "[concat('bdsdns-', uniqueString(resourceGroup().id))]"
     },
     "resources": [
         {
@@ -102,11 +114,13 @@
             "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
             "apiVersion": "2019-06-01",
             "name": "[concat(variables('StorageName'), '/default/', variables('bdsstorage'))]",
+            "properties": {
+                "shareQuota": "[parameters('StorageLimitSizeInGB')]"
+            },
             "dependsOn": [
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('StorageName'))]"
             ]
         },
-        // Docker Bds Maneger Image
         {
             "location": "[resourceGroup().location]",
             "name": "[parameters('containerName')]",
@@ -114,20 +128,33 @@
                 "[resourceId('Microsoft.Storage/storageAccounts/fileServices/shares', variables('StorageName'),  'default',  variables('bdsstorage') )]" 
             ],
             "type": "Microsoft.ContainerInstance/containerGroups",
-            "apiVersion": "2019-12-01",
+            "apiVersion": "2021-03-01",
             "properties": {
                 "containers": [
                     {
                         "name": "[parameters('containerName')]",
                         "properties": {
-                            "image": "bdsmaneger/core:main",
+                            "image": "[concat('ghcr.io/the-bds-maneger/core:', parameters('DockerBranch'))]",
                             "resources": {
                                 "requests": {
                                     "cpu": "[int(parameters('numberCpuCores'))]",
                                     "memoryInGB": "[float(parameters('RamMemory'))]"
                                 }
                             },
-                            "ports": "[variables('bds_ports')]",
+                            "ports": [
+                                {
+                                    "port": 1932,
+                                    "protocol": "TCP"
+                                },
+                                {
+                                    "port": 19132,
+                                    "protocol": "[parameters('ServerProtocol')]"
+                                },
+                                {
+                                    "port": 19133,
+                                    "protocol": "[parameters('ServerProtocol')]"
+                                }
+                            ],
                             "environmentVariables": [
                                 {
                                     "name": "WORLD_NAME",
@@ -167,7 +194,20 @@
                 "osType": "Linux",
                 "ipAddress": {
                     "type": "Public",
-                    "ports": "[variables('bds_ports')]",
+                    "ports": [
+                        {
+                            "port": 1932,
+                            "protocol": "TCP"
+                        },
+                        {
+                            "port": 19132,
+                            "protocol": "[parameters('ServerProtocol')]"
+                        },
+                        {
+                            "port": 19133,
+                            "protocol": "[parameters('ServerProtocol')]"
+                        }
+                    ],
                     "dnsNameLabel": "[variables('DnsName')]"
                 },
                 "volumes": [
@@ -182,7 +222,12 @@
                     }
                 ]
             },
-            "tags": {}
+            "tags": {
+                "Name": "[parameters('containerName')]",
+                "Description": "[parameters('ServerDescription')]",
+                "Server": "[parameters('ServerPlatform')]",
+                "By": "Bds Maneger Core"
+            }
         }
     ],
     "outputs": {

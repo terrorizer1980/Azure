@@ -196,7 +196,7 @@
                     "computerName": "[variables('vmName')]",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPassword')]",
-                    "customData": "[base64(concat(variables('cloud_init'), 'curl https://raw.githubusercontent.com/The-Bds-Maneger/Azure_VMs/main/installinVM.sh | sudo ', variables('InstallVariables'), ' bash -'))]"
+                    "customData": "[base64(concat(variables('cloud_init'), variables('InstallVariables'), ' bash -', base64ToString('')))]"
                 },
                 "storageProfile": {
                     "imageReference": {
