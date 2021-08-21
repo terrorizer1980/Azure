@@ -65,7 +65,7 @@ function StartBdsCore(){
 
     return child_process.execFileSync("docker", [
         "run",
-        "--rm",
+        // "--rm",
         "-d",
         "--name", "BdsCore",
         "--network=host",
