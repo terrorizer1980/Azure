@@ -126,5 +126,5 @@ function CheckBdsCore(){
         }).catch(err => {
             console.log(err);
         });
-    }, 1000);
+    }, 1 * 60 * 60 * 1000);
 })();
