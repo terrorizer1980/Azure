@@ -18,7 +18,7 @@
         "BdsManegerCoreDiskSize": {
             "type": "string",
             "metadata": {
-                "description": "Select the total storage for the Bds Manager Core (In Gb)"
+                "description": "Select the total storage for the Bds Manager Core (In GB)"
             },
             "defaultValue": "50"
         },
@@ -67,7 +67,7 @@
             "type": "string",
             "defaultValue": "latest",
             "allowedValues": [
-                "dev",
+                "main",
                 "latest"
             ],
             "metadata": {
@@ -196,7 +196,7 @@
                     "computerName": "[variables('vmName')]",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPassword')]",
-                    "customData": "[base64(concat(variables('cloud_init'), variables('InstallVariables'), ' bash -', base64ToString('')))]"
+                    "customData": "[base64(concat(variables('cloud_init'), 'curl https://raw.githubusercontent.com/The-Bds-Maneger/Azure/main/installinVM.sh | sudo ', variables('InstallVariables'), ' bash -'))]"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -233,7 +233,11 @@
     "outputs": {
         "config_core": {
             "type": "string",
-            "value": "[concat('http://', reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))).dnsSettings.fqdn, ':7774')]"
+            "value": "[concat('http://', reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))).dnsSettings.fqdn, ':1932')]"
+        },
+        "user_script": {
+            "type": "string",
+            "value": "[concat(variables('cloud_init'), 'curl https://raw.githubusercontent.com/The-Bds-Maneger/Azure/main/installinVM.sh | sudo ', variables('InstallVariables'), ' bash -')]"
         }
     }
 }
