@@ -54,6 +54,7 @@ function CreateDiskPartion(){
 
 // Start Docker Image
 function StartBdsCore(){
+    if (child_process.execSync("docker ps -a").toString().includes("BdsCore")) return console.log("BdsCore is already running");
     const args = [];
 
     if (VMConfig.world) args.push("-e", `WORLD_NAME="${VMConfig.world}"`);
@@ -65,7 +66,7 @@ function StartBdsCore(){
 
     return child_process.execFileSync("docker", [
         "run",
-        // "--rm",
+        "--rm",
         "-d",
         "--name", "BdsCore",
         "--network=host",
