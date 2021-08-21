@@ -96,9 +96,9 @@ function CheckBdsCore(){
             if (err) return reject(err);
             const BdsCore = (stdout+stderr).split(/\n/gi).filter(a => /BdsCore/gi.test(a));
             if (BdsCore.length > 0) {
-                resolve(true);
+                return resolve(true);
             } else {
-                resolve(false);
+                return reject(false);
             }
         });
     });
