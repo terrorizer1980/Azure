@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:20.04
 
 # Install git and curl
 RUN apt update && apt install -y wget curl git sudo
